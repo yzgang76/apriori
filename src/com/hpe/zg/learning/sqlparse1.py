@@ -111,8 +111,8 @@ def parse(sql, fields, dimension=None):
     if not parsed:
         print("Failed to parse the input string")
         return ()
-    sql_type = sqlparse.sql.Statement(parsed[0]).get_type()
-    print("SQL Type: ", sql_type)
+    # sql_type = sqlparse.sql.Statement(parsed[0]).get_type()
+    # print("SQL Type: ", sql_type)
     # if sql_type in 'SELECT':
     #     print("Only for SELECT sql statement now")
     #     return ()
@@ -124,7 +124,7 @@ def parse(sql, fields, dimension=None):
             parse_where(token, dimension, fields)
         elif isinstance(token, Parenthesis):
             sub = token.value[1:len(token.value) - 1].lstrip().rstrip()
-            parse(sub, fields)
+            parse(sub, fields, dimension)
         else:
             pass
 
@@ -143,12 +143,17 @@ if __name__ == '__main__':
         select a from (select a from A where (b>0) where c>2 group by a limit 1,2)
     '''
     sql3 = '''
-    update A set x=1 where x in (select y from B where A.x<B.y)
+    update A set x=1 where x in (select x, y from A where x<y)
+    '''
+    sql4 = '''
+    delete from A where x>1 and y in (select x, y ,z from A where x>z)
     '''
 
-    ss = sql1
+
+    ss = sql4
     # o(ss)
     parse(ss, result)
+    print("***********************")
     print(result)
     # o("""select a from b where state = 'Outstanding' and additional_text like '%Critical%' escape '^'""")
     # test(sql1)
