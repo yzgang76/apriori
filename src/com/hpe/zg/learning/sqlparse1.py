@@ -27,13 +27,6 @@ def deal(field):
         return field
 
 
-def get_dimension(dim):
-    if dim is not None and ' ' in dim:
-        return dim.split(' ')[1]
-    else:
-        return dim
-
-
 def output_field(fields, dim, f):
     if len(f.keys()) > 0:
         print(f)
@@ -81,6 +74,37 @@ def parse_where(token, dim, fields):
     output_field(fields, dim, f)
 
 
+def _get_dimension(dim):
+    if dim is not None and ' ' in dim:
+        return dim.split(' ')[1]
+    else:
+        return dim
+
+
+def get_dimension(parsed_item):
+    get_dim_name = lambda dim: dim.split(' ')[1] if dim is not None and ' ' in dim else dim
+    sql_type = sqlparse.sql.Statement(parsed_item).get_type()
+    if sql_type in ['SELECT', 'DELETE']:
+        after_from = False
+        for token in parsed_item.tokens:
+            if token.is_keyword and token.value.lower() == 'from':
+                after_from = True
+            elif isinstance(token, Identifier) and after_from:
+                return get_dim_name(token.value)
+            else:
+                pass
+        return None
+    elif sql_type == 'UPDATE':
+        for token in parsed_item.tokens:
+            if isinstance(token, Identifier):
+                return get_dim_name(token.value)
+            else:
+                pass
+        return None
+    else:
+        return None
+
+
 def parse(sql, fields, dimension=None):
     parsed = sqlparse.parse(sql)
 
@@ -92,16 +116,12 @@ def parse(sql, fields, dimension=None):
     # if sql_type in 'SELECT':
     #     print("Only for SELECT sql statement now")
     #     return ()
+    if dimension is None:
+        dimension = get_dimension(parsed[0])
 
-    after_from = False
     for token in parsed[0].tokens:
-        if token.is_keyword and token.value.lower() == 'from':
-            after_from = True
-        elif isinstance(token, Where) and dimension is not None:
+        if isinstance(token, Where) and dimension is not None:
             parse_where(token, dimension, fields)
-        elif isinstance(token, Identifier) and after_from:
-            dimension = get_dimension(token.value)
-            after_from = False
         elif isinstance(token, Parenthesis):
             sub = token.value[1:len(token.value) - 1].lstrip().rstrip()
             parse(sub, fields)
@@ -122,8 +142,13 @@ if __name__ == '__main__':
     sql2 = '''
         select a from (select a from A where (b>0) where c>2 group by a limit 1,2)
     '''
-    # o(sql2)
-    parse(sql2, result)
+    sql3 = '''
+    update A set x=1 where x in (select y from B where A.x<B.y)
+    '''
+
+    ss = sql1
+    # o(ss)
+    parse(ss, result)
     print(result)
     # o("""select a from b where state = 'Outstanding' and additional_text like '%Critical%' escape '^'""")
     # test(sql1)
