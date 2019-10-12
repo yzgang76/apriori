@@ -120,10 +120,10 @@ if __name__ == '__main__':
     ORDER BY  event_time DESC ,  alarmIdentifier DESC ,  identifier DESC LIMIT 0 , 500;
     '''
     sql2 = '''
-        select a from (select a from A where (b>0) group by a limit 1,2)
+        select a from (select a from A where (b>0) where c>2 group by a limit 1,2)
     '''
     # o(sql2)
-    parse(sql1, result)
+    parse(sql2, result)
     print(result)
     # o("""select a from b where state = 'Outstanding' and additional_text like '%Critical%' escape '^'""")
     # test(sql1)
