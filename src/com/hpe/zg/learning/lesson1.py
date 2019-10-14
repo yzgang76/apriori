@@ -34,6 +34,8 @@ if __name__ == '__main__':
     d1 = {'a': [1, 2], 'b': [4]}
     d2 = {'a': [2, 3], 'd': [5]}
 
+    print([d1['a']] + [d2.get('e')])
+
     print(merge_dict(d1, d2))
 # print(w)
 # print("Good bye!")

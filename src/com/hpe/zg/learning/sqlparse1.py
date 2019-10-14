@@ -5,6 +5,20 @@ import sqlparse
 from sqlparse.sql import Parenthesis, Comparison, Identifier, Where
 
 
+def merge_dict(d1, d2):
+    merged = {}
+    for k, v in d1.items():
+        if d2.__contains__(k):
+            merged[k] = v + d2[k]
+        else:
+            merged[k] = v
+    for k, v in d2.items():
+        if d1.__contains__(k):
+            pass
+        else:
+            merged[k] = v
+    return merged
+
 def test(sql):
     # s = sqlparse.format(sql, encoding=None)
     # print(s)
@@ -27,17 +41,17 @@ def deal(field):
         return field
 
 
-def output_field(fields, dim, f):
-    if len(f.keys()) > 0:
-        print(f)
-        append_field(fields, dim, f)
-
-
 def append_field(fields, dim, f):
     if fields.__contains__(dim):
         fields[dim].append(deal(list(f.keys())[0]))
     else:
         fields[dim] = [deal(list(f.keys())[0])]
+
+
+def output_field(fields, dim, f):
+    if len(f.keys()) > 0:
+        print(f)
+        append_field(fields, dim, f)
 
 
 def parse_where(token, dim, fields):
@@ -130,7 +144,7 @@ def parse(sql, fields, dimension=None):
 
 
 if __name__ == '__main__':
-    result = {}
+
     sql0 = "select x from ab A  where ab.b in (select b from bb B where bb.c>1) and ab.x!=1 order by ab.x;"
     sql1 = '''
     SELECT identifier 
@@ -148,12 +162,23 @@ if __name__ == '__main__':
     sql4 = '''
     delete from A where x>1 and y in (select x, y ,z from A where x>z)
     '''
-
-
+    sql_array = [sql1, sql2, sql3, sql4]
     ss = sql4
     # o(ss)
-    parse(ss, result)
-    print("***********************")
-    print(result)
+    # parse(ss, result)
+    # print("***********************")
+    # print(result)
     # o("""select a from b where state = 'Outstanding' and additional_text like '%Critical%' escape '^'""")
     # test(sql1)
+
+    result = {}
+    result1 = {}
+    merged = {}
+    for sc in sql_array:
+        parse(sc, result1)
+        for k, v in result1.items():
+            result[k] = [set(v)]
+        merged = merge_dict(merged,  result)
+        result = {}
+        result1 = {}
+    print(merged)
