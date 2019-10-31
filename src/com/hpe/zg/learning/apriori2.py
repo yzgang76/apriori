@@ -118,34 +118,75 @@ def getSubset(fromList, toList):
                 getSubset(tt, toList)
 
 
-def calcConf(freqSet, H, supportData, ruleList, minConf=0.7):
-    for conseq in H:
-        conf = supportData[freqSet] / supportData[freqSet - conseq]  # 计算置信度
-        # 提升度lift计算lift = p(a & b) / p(a)*p(b)
-        lift = supportData[freqSet] / (supportData[conseq] * supportData[freqSet - conseq])
+def set2array(s):
+    a = []
+    for i in s:
+        a.append(i)
+    return a
 
-        if conf >= minConf and lift > 1:
-            print(freqSet - conseq, '-->', conseq, '支持度', round(supportData[freqSet - conseq], 2), '置信度：', conf,
-                  'lift值为：', round(lift, 2))
-            ruleList.append((freqSet - conseq, conseq, conf))
-        # else:
+
+def calcConf(freqSet, H, supportData, ruleList, minConf=0.7):
+    if len(freqSet) < 2:
+        # print(set2array(freqSet), 'support', round(supportData[freqSet], 2))
+        item = {
+            'from': set2array(freqSet),
+            'support': round(supportData[freqSet], 2)
+        }
+        # print(item)
+        ruleList.append(item)
+    else:
+        for conseq in H:
+            conf = supportData[freqSet] / supportData[freqSet - conseq]  # 计算置信度
+            # 提升度lift计算lift = p(a & b) / p(a)*p(b)
+            lift = supportData[freqSet] / (supportData[conseq] * supportData[freqSet - conseq])
+
+            if conf >= minConf and lift > 1:
+                # print(freqSet - conseq, '-->', conseq, '支持度', round(supportData[freqSet - conseq], 2), '置信度：', conf,
+                #       'lift值为：', round(lift, 2))
+                item = {
+                    'from': set2array(freqSet - conseq),
+                    'to': set2array(conseq),
+                    'support': round(supportData[freqSet - conseq], 2),
+                    'confidence': conf,
+                    'lift': round(lift, 2)
+                }
+                ruleList.append(item)
+                # ruleList.append((freqSet - conseq, conseq, conf))
+            # else:
             # print(freqSet - conseq, '-->', conseq, '淘汰', round(supportData[freqSet - conseq], 2), conf, lift)
 
 
 # 生成规则
 def gen_rule(L, supportData, minConf=0.7):
-    bigRuleList = []
-    for i in range(1, len(L)):  # 从二项集开始计算
+    rules = []
+    for i in range(0, len(L)):  # 从二项集开始计算
         for freqSet in L[i]:  # freqSet为所有的k项集
             # 求该三项集的所有非空子集，1项集，2项集，直到k-1项集，用H1表示，为list类型,里面为frozenset类型，
             H1 = list(freqSet)
             all_subset = []
             getSubset(H1, all_subset)  # 生成所有的子集
-            calcConf(freqSet, all_subset, supportData, bigRuleList, minConf)
-    return bigRuleList
+            calcConf(freqSet, all_subset, supportData, rules, minConf)
+    return rules
+
+
+def run_apriori(dataset, min_s, min_c):
+    l, support_data = apriori(dataset, minSupport=min_s)
+    rules = gen_rule(l, support_data, minConf=min_c)
+    return {
+        'summary': {
+            'number_of_data': len(dataset),
+            'min_support': min_s,
+            'min_confidence': min_c
+        },
+        'rules': rules
+    }
 
 
 if __name__ == '__main__':
     dataSet = loadDataSet()
-    L, supportData = apriori(dataSet, minSupport=0.2)
-    rule = gen_rule(L, supportData, minConf=0.7)
+    ms = 0.2
+    mc = 0.7
+    rule = run_apriori(dataSet, ms, mc)
+    print(rule['summary'])
+    for x in rule['rules']:
+        print(x)

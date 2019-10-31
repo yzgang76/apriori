@@ -4,6 +4,13 @@
 import sqlparse
 from sqlparse.sql import Parenthesis, Comparison, Identifier, Where
 
+def remove_duplication(l):
+    list1 = []  # 创建一个新的数组来存储无重复元素的数组
+    for element in l:
+        if element not in list1:
+            list1.append(element)
+    return list1
+
 
 def merge_dict(d1, d2):
     merged = {}
@@ -50,7 +57,7 @@ def append_field(fields, dim, f):
 
 def output_field(fields, dim, f):
     if len(f.keys()) > 0:
-        print(f)
+        # print(f)
         append_field(fields, dim, f)
 
 
@@ -148,7 +155,7 @@ if __name__ == '__main__':
     sql0 = "select x from ab A  where ab.b in (select b from bb B where bb.c>1) and ab.x!=1 order by ab.x;"
     sql1 = '''
     SELECT identifier 
-    FROM T temip_alarm 
+    FROM T A 
     WHERE a is not null and (state= 'Outstanding' and additional_text like '%Critical%' escape '^' or fun(identifier)=2
     and event_time>0 and event_time<1234456677) 
     ORDER BY  event_time DESC ,  alarmIdentifier DESC ,  identifier DESC LIMIT 0 , 500;
@@ -177,7 +184,7 @@ if __name__ == '__main__':
     for sc in sql_array:
         parse(sc, result1)
         for k, v in result1.items():
-            result[k] = [set(v)]
+            result[k] = [remove_duplication(v)]
         merged = merge_dict(merged,  result)
         result = {}
         result1 = {}

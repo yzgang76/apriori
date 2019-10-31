@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def x(d):
     d.append(1)
 
@@ -37,5 +40,13 @@ if __name__ == '__main__':
     print([d1['a']] + [d2.get('e')])
 
     print(merge_dict(d1, d2))
+    aa = np.array(set([1, 1, 2]))
+    print(aa.__class__, aa)
+
+    f1 = frozenset('1')
+    a1 = np.asarray(f1)
+    print(f1, len(f1), a1)
+    for d in f1:
+        print(d)
 # print(w)
 # print("Good bye!")
