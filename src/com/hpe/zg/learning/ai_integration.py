@@ -25,15 +25,15 @@ def run():
         result = {}
         result1 = {}
     print(merged)
-    print()
+    # print()
     results = {}
     for k, v in merged.items():
-        results[k] = run_apriori(v, 0.2, 0.7)
-    print()
-    print()
+        results[k] = run_apriori(v, 0.5, 0.7)
+    # print()
+    # print()
     print(results)
     return results
 
+
 if __name__ == '__main__':
     app.run()
-

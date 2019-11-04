@@ -147,7 +147,7 @@ def calcConf(freqSet, H, supportData, ruleList, minConf=0.7):
                     'from': set2array(freqSet - conseq),
                     'to': set2array(conseq),
                     'support': round(supportData[freqSet - conseq], 2),
-                    'confidence': conf,
+                    'confidence': round(conf, 2),
                     'lift': round(lift, 2)
                 }
                 ruleList.append(item)

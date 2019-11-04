@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlparse
-from sqlparse.sql import Parenthesis, Comparison, Identifier, Where
+from sqlparse.sql import Parenthesis, Comparison, Identifier, Function, Where
 
 def remove_duplication(l):
     list1 = []  # 创建一个新的数组来存储无重复元素的数组
@@ -82,6 +82,11 @@ def parse_where(token, dim, fields):
             st = list(filter(lambda x: not x.is_whitespace, t.tokens))
             f[st[0].value] = [st[1].value]
             k = st[0].value
+        elif isinstance(t, Function):
+            output_field(fields, dim, f)
+            f = {}
+            f[t.value] = []
+            k = t.value
         elif isinstance(t, Identifier):
             output_field(fields, dim, f)
             f = {}
@@ -169,8 +174,9 @@ if __name__ == '__main__':
     sql4 = '''
     delete from A where x>1 and y in (select x, y ,z from A where x>z)
     '''
-    sql_array = [sql1, sql2, sql3, sql4]
-    ss = sql4
+    sql5 = '''select * from A where f(e)=true'''
+    sql_array = [sql5]
+    ss = sql5
     # o(ss)
     # parse(ss, result)
     # print("***********************")
